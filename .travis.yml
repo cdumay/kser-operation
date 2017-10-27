@@ -1,0 +1,15 @@
+language: python
+python:
+- 3.5
+install:
+- pip --version
+script:
+- python setup.py build
+deploy:
+  provider: pypi
+  user: cdumay
+  password:
+    secure: hTuflCp81P/VvdPcPVnjit7o5p69Jz18bfZ6u4RGq8icvg6mVj4QkcFxSxEb7/kLxTXM26YEcQqNz5zmLrFHcPKjWt4sWs3TutXXfM2xOrZqLVAFaWXHxmKgtfDOwkgOLangRH3O9ICx0felFq1C8bi518Ko7gbhKSKpw9ue0+3Se9o4jYDZE70FWQNjf/Cb945OLTJ+v7/F1hvgDTYw6WWURoigzarGfzy8P27hqUx2Jm6LERsfSStehRmsNpi6VOXEsfpmT/ekl+/PT3ZbkOQr3jG7JVSSE/1W4TBHdIL7z2f5U5pisEK1o8Kot4yJ9/T20ESEzw5LgYWBNFVfY89HtSMqtuCR5XRIGRakcWXMESTcY9TbKqo5mIrn/7ZQqUQNyw3UDkpwng0Hwc/updV29qwpaMInYCaIzhLzxmNqRaLYurq3wcQ57LbsMNtwaN31/9q3GIKbvv7FScI4M7Ua1zWlV9OfZuy4LzkQESnaW9CdhKfUFg3os46BYa9AMdZhBzykZmhxrtw7L1c0ebT+rT8dnF/a8Q2tYirONpPvr8Dp2KebUPj4M75ar4/Okf3ybAhwSJHLOjVvmgieRvsPdquBrjE1wS8/n5+yNNLaog4B9jM+EGDRNYWvU7N9MeWLvNVdvu4vpIXOd2xNeVRIr1Ktoezvkag4ZQPf01w=
+  on:
+    tags: true
+    repo: cdumay/kser-operation
