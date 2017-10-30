@@ -15,10 +15,11 @@ from kser.transport import Message
 class Task(Entrypoint):
     """"""
 
-    def __init__(self, uuid=None, params=None, name=None, **kwargs):
+    def __init__(self, uuid=None, params=None, name=None, status="PENDING",
+                 **kwargs):
         self.uuid = uuid or str(uuid4())
         self.params = params
-        self.status = "PENDING"
+        self.status = status
         self.path = name or self.__class__.path
         self.metadata = kwargs
 
