@@ -34,8 +34,7 @@ class Task(Entrypoint):
         :rtype: kser.transport.Message
         """
         return Message(
-            uuid=str(self.uuid), entrypoint=self.path,
-            params=dict(_id=str(self.uuid)),
+            uuid=str(self.uuid), entrypoint=self.path, params=self.params,
             result=result
         )
 
