@@ -7,32 +7,22 @@
 
 """
 import logging
-
 from kser.controller import Controller
-from kser.entry import Entrypoint
 
 logger = logging.getLogger(__name__)
 
 
 class OperationRegistry(object):
-    def __init__(self, app=None):
-        self.controller = Controller()
+    def __init__(self, app=None, controller_class=Controller):
+        self.controller = controller_class()
         self.app = None
         if app:
             self.init_app(app)
 
-    def load_module(self, module):
-        for value in vars(module).values():
-            try:
-                if issubclass(value, Entrypoint) and (value != Entrypoint):
-                    self.controller.register(value)
-            except:
-                pass
-
-    def register(self, entrypoint):
-        """Shortcut to registry registration"""
-        logger.info("Operation registry: loaded {}".format(entrypoint.path))
-        self.controller.register(entrypoint.path, entrypoint)
+    def subscribe(self, callback):
+        if callback.path not in self.controller.ENTRYPOINTS:
+            logger.info("Operation registry: loaded {}".format(callback.path))
+            self.controller.register(callback.path, callback)
 
     def init_app(self, app=None):
         self.app = app
