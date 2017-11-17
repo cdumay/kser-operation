@@ -11,8 +11,10 @@ from kser.entry import Entrypoint
 
 class Task(Entrypoint):
     """"""
-    def __init__(self, uuid=None, params=None, status="PENDING", **kwargs):
-        Entrypoint.__init__(self, uuid=uuid, params=params, result=None)
+
+    def __init__(self, uuid=None, params=None, status="PENDING", result=None,
+                 **kwargs):
+        Entrypoint.__init__(self, uuid=uuid, params=params, result=result)
         self.status = status
         self.metadata = kwargs
 
