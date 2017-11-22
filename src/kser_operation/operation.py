@@ -160,7 +160,7 @@ class Operation(object, metaclass=EntrypointMeta):
             params=dict(_id=str(self.uuid))
         )
 
-    def execute(self):
+    def execute(self, result=None):
         """ Execution 'wrapper' to make sure that it return a result
 
         :return: Execution result
@@ -168,9 +168,8 @@ class Operation(object, metaclass=EntrypointMeta):
         """
         self._prerun()
         try:
-            result = None
             for task in self.tasks:
-                result = task.execute()
+                result = task.execute(result=result)
 
             return self._onsuccess(result + Result(
                 uuid=str(self.uuid),
