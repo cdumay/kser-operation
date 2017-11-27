@@ -170,18 +170,17 @@ class Operation(object, metaclass=EntrypointMeta):
         try:
             for task in self.tasks:
                 result = task.execute(result=result)
+                if result.retcode != 0:
+                    return self._onerror(result)
 
-            return self._onsuccess(result + Result(
-                uuid=str(self.uuid),
-                stdout="Operation {}[{}] successed".format(
-                    self.__class__.path, self.uuid
-                )
-            ))
+            result = self._onsuccess(result=result)
 
         except Exception as exc:
-            return self._onerror(
-                Result.fromException(exc, str(self.uuid))
-            )
+            result = self._onerror(Result.fromException(exc, uuid=self.uuid))
+
+        finally:
+            # noinspection PyUnboundLocalVariable
+            return result
 
     def display(self):
         """ dump operation
