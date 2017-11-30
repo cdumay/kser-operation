@@ -7,16 +7,14 @@
 
 """
 import logging
-from uuid import uuid4
-
 from cdumay_result import Result
-from kser.entry import EntrypointMeta
+from kser.entry import Entrypoint
 from kser.schemas import Message
 
 logger = logging.getLogger(__name__)
 
 
-class Operation(object, metaclass=EntrypointMeta):
+class Operation(Entrypoint):
     """"""
 
     @classmethod
@@ -37,7 +35,7 @@ class Operation(object, metaclass=EntrypointMeta):
         """
 
     def __init__(self, uuid=None, status="PENDING", tasks=None, **kwargs):
-        self.uuid = uuid or str(uuid4())
+        Entrypoint.__init__(self, uuid=uuid)
         self.tasks = tasks or list()
         self.status = status
         for key, value in kwargs.items():
@@ -160,27 +158,25 @@ class Operation(object, metaclass=EntrypointMeta):
             params=dict(_id=str(self.uuid))
         )
 
+    def unsafe_execute(self, result=None):
+        self._prerun()
+        for task in self.tasks:
+            result = task.unsafe_execute(result=result)
+            if result.retcode != 0:
+                return self._onerror(result)
+
+        return self._onsuccess(result=result)
+
     def execute(self, result=None):
         """ Execution 'wrapper' to make sure that it return a result
 
         :return: Execution result
         :rtype: cdumay_result.Result
         """
-        self._prerun()
         try:
-            for task in self.tasks:
-                result = task.execute(result=result)
-                if result.retcode != 0:
-                    return self._onerror(result)
-
-            result = self._onsuccess(result=result)
-
+            return self.unsafe_execute(result=result)
         except Exception as exc:
-            result = self._onerror(Result.fromException(exc, uuid=self.uuid))
-
-        finally:
-            # noinspection PyUnboundLocalVariable
-            return result
+            return self._onerror(Result.fromException(exc, uuid=self.uuid))
 
     def display(self):
         """ dump operation
