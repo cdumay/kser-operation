@@ -96,11 +96,6 @@ class Operation(Entrypoint):
         ))
         return self.prerun()
 
-    # noinspection PyMethodMayBeStatic
-    def prerun(self):
-        """ To implement, perform check before operation run
-        """
-
     def _onsuccess(self, result):
         """ To execute on execution success
         :param cdumay_result.Result result: Execution result
@@ -146,16 +141,16 @@ class Operation(Entrypoint):
         """
         return result
 
-    def to_kmsg(self):
+    def to_Message(self, result=None):
         """Convert operation to Kser Message
 
         :return: The Kser operation
         :rtype: kser.schemas.Message
         """
         return Message(
-            uuid=str(self.uuid),
-            entrypoint="OperationLauncher",
-            params=dict(_id=str(self.uuid))
+            uuid=self.uuid, entrypoint=self.__class__.path,
+            params=dict(_id=str(self.uuid)),
+            result=result if result else self.result
         )
 
     def unsafe_execute(self, result=None):
