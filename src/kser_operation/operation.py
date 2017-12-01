@@ -7,7 +7,6 @@
 
 """
 import logging
-
 from cdumay_rest_client.exceptions import ValidationError
 from cdumay_result import Result
 from kser_operation.task import Task
@@ -20,6 +19,12 @@ class Operation(Task):
 
     def check_required_params(self):
         """ Check if all required parameters are set"""
+        for param in self.REQUIRED_FIELDS:
+            if param not in self.params:
+                raise ValidationError("Missing parameter: {} for {}".format(
+                    param, self.__class__.path
+                ))
+
         for child in self.TASKS:
             for param in child.REQUIRED_FIELDS:
                 if param not in self.params:
