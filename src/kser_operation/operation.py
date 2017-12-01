@@ -7,15 +7,25 @@
 
 """
 import logging
+
+from cdumay_rest_client.exceptions import ValidationError
 from cdumay_result import Result
-from kser.entry import Entrypoint
-from kser.schemas import Message
+from kser_operation.task import Task
 
 logger = logging.getLogger(__name__)
 
 
-class Operation(Entrypoint):
-    """"""
+class Operation(Task):
+    TASKS = ()
+
+    def check_required_params(self):
+        """ Check if all required parameters are set"""
+        for child in self.TASKS:
+            for param in child.REQUIRED_FIELDS:
+                if param not in self.params:
+                    raise ValidationError(
+                        "Missing parameter: {} for {}".format(param, child.path)
+                    )
 
     @classmethod
     def new(cls, **kwargs):
@@ -25,30 +35,16 @@ class Operation(Entrypoint):
     def parse_inputs(cls, **kwargs):
         return kwargs
 
-    @classmethod
-    def init_by_id(cls, _id):
-        """Load operation by its ID
-
-        :param Any _id: Operation ID
-        :return: the operation
-        :rtype: kser_operation.operation.Operation
-        """
-
-    def __init__(self, uuid=None, status="PENDING", tasks=None, **kwargs):
-        Entrypoint.__init__(self, uuid=uuid)
+    def __init__(self, uuid=None, status="PENDING", params=None, tasks=None,
+                 result=None):
+        Task.__init__(self, uuid=uuid, params=params, status=status,
+                      result=result)
         self.tasks = tasks or list()
-        self.status = status
-        for key, value in kwargs.items():
-            setattr(self, key, value)
 
     def __repr__(self):
         return "Operation [{}](id={},status={})".format(
             self.__class__.__name__, self.uuid, self.status
         )
-
-    def get_attr(self, item):
-        attr = "{}Id".format(item)
-        return attr, getattr(getattr(self, item, self), attr, None)
 
     def _set_status(self, status):
         """ update operation status
@@ -79,6 +75,7 @@ class Operation(Entrypoint):
         logger.debug("{}.PreBuild: {}[{}]: {}".format(
             self.__class__.__name__, self.__class__.path, self.uuid, kwargs
         ))
+        self.check_required_params()
         return self.prebuild(**kwargs)
 
     # noinspection PyMethodMayBeStatic
@@ -90,6 +87,7 @@ class Operation(Entrypoint):
     def _prerun(self):
         """ To execute before running message
         """
+        self.check_required_params()
         self._set_status("RUNNING")
         logger.debug("{}.PreRun: {}[{}]: running...".format(
             self.__class__.__name__, self.__class__.path, self.uuid
@@ -108,16 +106,6 @@ class Operation(Entrypoint):
         ))
         return self.onsuccess(result)
 
-    # noinspection PyMethodMayBeStatic
-    def onsuccess(self, result):
-        """ To implement on execution success
-
-        :param cdumay_result.Result result: Execution result
-        :return: Execution result
-        :rtype: cdumay_result.Result
-        """
-        return result
-
     def _onerror(self, result):
         """ To execute on execution failure
 
@@ -131,28 +119,6 @@ class Operation(Entrypoint):
         ), extra=result.retval)
         return self.onerror(result)
 
-    # noinspection PyMethodMayBeStatic
-    def onerror(self, result):
-        """ To implement on execution failure
-
-        :param cdumay_result.Result result: Execution result
-        :return: Execution result
-        :rtype: cdumay_result.Result
-        """
-        return result
-
-    def to_Message(self, result=None):
-        """Convert operation to Kser Message
-
-        :return: The Kser operation
-        :rtype: kser.schemas.Message
-        """
-        return Message(
-            uuid=self.uuid, entrypoint=self.__class__.path,
-            params=dict(_id=str(self.uuid)),
-            result=result if result else self.result
-        )
-
     def unsafe_execute(self, result=None):
         self._prerun()
         for task in self.tasks:
@@ -161,17 +127,6 @@ class Operation(Entrypoint):
                 return self._onerror(result)
 
         return self._onsuccess(result=result)
-
-    def execute(self, result=None):
-        """ Execution 'wrapper' to make sure that it return a result
-
-        :return: Execution result
-        :rtype: cdumay_result.Result
-        """
-        try:
-            return self.unsafe_execute(result=result)
-        except Exception as exc:
-            return self._onerror(Result.fromException(exc, uuid=self.uuid))
 
     def display(self):
         """ dump operation

@@ -12,6 +12,10 @@ from kser.entry import Entrypoint
 class Task(Entrypoint):
     """"""
 
+    @classmethod
+    def init_by_id(cls, _id):
+        """Load task by its ID"""
+
     def __init__(self, uuid=None, params=None, status="PENDING", result=None,
                  **kwargs):
         Entrypoint.__init__(self, uuid=uuid, params=params, result=result)
