@@ -8,6 +8,7 @@
 """
 import logging
 from kser.entry import Entrypoint
+from kser.schemas import Message
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +35,14 @@ class Task(Entrypoint):
             self.__class__.__name__, self.status, self.__class__.path,
             self.uuid, message
         )
-        return logger.log(level=level, msg=msg, *args, **kwargs)
+        extra = kwargs.pop("extra", dict())
+        extra.update(dict(kmsg=Message(
+            self.uuid, entrypoint=self.__class__.path, params=self.params
+        ).dump()))
+
+        return logger.log(
+            level=level, msg=msg, extra=extra, *args, **kwargs
+        )
 
     def __repr__(self):
         return "Task [{}](uuid={},status={}, params={})".format(

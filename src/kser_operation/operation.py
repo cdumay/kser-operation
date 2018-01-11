@@ -8,7 +8,8 @@
 """
 import logging
 from cdumay_rest_client.exceptions import ValidationError
-from cdumay_result import Result
+from cdumay_result import Result, ResultSchema
+from kser.schemas import Message
 from kser_operation.task import Task
 
 logger = logging.getLogger(__name__)
@@ -56,10 +57,18 @@ class Operation(Task):
 
         :param str status: New status
         """
-        logger.info("{}.SetStatus: {}[{}] status update '{}' -> '{}'".format(
-            self.__class__.__name__, self.__class__.path, self.uuid,
-            self.status, status
-        ))
+        logger.info(
+            "{}.SetStatus: {}[{}] status update '{}' -> '{}'".format(
+                self.__class__.__name__, self.__class__.path, self.uuid,
+                self.status, status
+            ),
+            extra=dict(
+                kmsg=Message(
+                    self.uuid, entrypoint=self.__class__.path,
+                    params=self.params
+                ).dump()
+            )
+        )
         return self.set_status(status)
 
     def set_status(self, status):
@@ -77,9 +86,17 @@ class Operation(Task):
         self.tasks.append(task)
 
     def _prebuild(self, **kwargs):
-        logger.debug("{}.PreBuild: {}[{}]: {}".format(
-            self.__class__.__name__, self.__class__.path, self.uuid, kwargs
-        ))
+        logger.debug(
+            "{}.PreBuild: {}[{}]: {}".format(
+                self.__class__.__name__, self.__class__.path, self.uuid, kwargs
+            ),
+            extra=dict(
+                kmsg=Message(
+                    self.uuid, entrypoint=self.__class__.path,
+                    params=self.params
+                ).dump()
+            )
+        )
         self.check_required_params()
         return self.prebuild(**kwargs)
 
@@ -94,9 +111,17 @@ class Operation(Task):
         """
         self.check_required_params()
         self._set_status("RUNNING")
-        logger.debug("{}.PreRun: {}[{}]: running...".format(
-            self.__class__.__name__, self.__class__.path, self.uuid
-        ))
+        logger.debug(
+            "{}.PreRun: {}[{}]: running...".format(
+                self.__class__.__name__, self.__class__.path, self.uuid
+            ),
+            extra=dict(
+                kmsg=Message(
+                    self.uuid, entrypoint=self.__class__.path,
+                    params=self.params
+                ).dump()
+            )
+        )
         return self.prerun()
 
     def _onsuccess(self, result):
@@ -106,9 +131,18 @@ class Operation(Task):
         :rtype: cdumay_result.Result
         """
         self._set_status("SUCCESS")
-        logger.info("{}.Success: {}[{}]: {}".format(
-            self.__class__.__name__, self.__class__.path, self.uuid, result
-        ))
+        logger.info(
+            "{}.Success: {}[{}]: {}".format(
+                self.__class__.__name__, self.__class__.path, self.uuid, result
+            ),
+            extra=dict(
+                kmsg=Message(
+                    self.uuid, entrypoint=self.__class__.path,
+                    params=self.params
+                ).dump(),
+                kresult=ResultSchema().dump(result).data if result else dict()
+            )
+        )
         return self.onsuccess(result)
 
     def _onerror(self, result):
@@ -119,9 +153,18 @@ class Operation(Task):
         :rtype: cdumay_result.Result
         """
         self._set_status("FAILED")
-        logger.error("{}.Failed: {}[{}]: {}".format(
-            self.__class__.__name__, self.__class__.path, self.uuid, result
-        ), extra=result.retval)
+        logger.error(
+            "{}.Failed: {}[{}]: {}".format(
+                self.__class__.__name__, self.__class__.path, self.uuid, result
+            ),
+            extra=dict(
+                kmsg=Message(
+                    self.uuid, entrypoint=self.__class__.path,
+                    params=self.params
+                ).dump(),
+                kresult=ResultSchema().dump(result).data if result else dict()
+            )
+        )
         return self.onerror(result)
 
     def unsafe_execute(self, result=None):
@@ -190,9 +233,17 @@ class Operation(Task):
         :rtype: list(kser_operation.operation.Operation)
         """
         tasks = self.build_tasks(**kwargs)
-        logger.debug("{}.BuildTasks: {} task(s) found".format(
-            self.__class__.__name__, len(tasks)
-        ))
+        logger.debug(
+            "{}.BuildTasks: {} task(s) found".format(
+                self.__class__.__name__, len(tasks)
+            ),
+            extra=dict(
+                kmsg=Message(
+                    self.uuid, entrypoint=self.__class__.path,
+                    params=self.params
+                ).dump()
+            )
+        )
         return tasks
 
     # noinspection PyMethodMayBeStatic
