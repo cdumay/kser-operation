@@ -52,10 +52,11 @@ class Operation(Task):
             self.__class__.__name__, self.uuid, self.status
         )
 
-    def _set_status(self, status):
+    def _set_status(self, status, result=None):
         """ update operation status
 
         :param str status: New status
+        :param cdumay_result.Result result: Execution result
         """
         logger.info(
             "{}.SetStatus: {}[{}] status update '{}' -> '{}'".format(
@@ -69,12 +70,13 @@ class Operation(Task):
                 ).dump()
             )
         )
-        return self.set_status(status)
+        return self.set_status(status, result)
 
-    def set_status(self, status):
+    def set_status(self, status, result=None):
         """ update operation status
 
         :param str status: New status
+        :param cdumay_result.Result result: Execution result
         """
         self.status = status
 
@@ -130,7 +132,7 @@ class Operation(Task):
         :return: Execution result
         :rtype: cdumay_result.Result
         """
-        self._set_status("SUCCESS")
+        self._set_status("SUCCESS", result)
         logger.info(
             "{}.Success: {}[{}]: {}".format(
                 self.__class__.__name__, self.__class__.path, self.uuid, result
@@ -152,7 +154,7 @@ class Operation(Task):
         :return: Execution result
         :rtype: cdumay_result.Result
         """
-        self._set_status("FAILED")
+        self._set_status("FAILED", result)
         logger.error(
             "{}.Failed: {}[{}]: {}".format(
                 self.__class__.__name__, self.__class__.path, self.uuid, result
@@ -203,7 +205,7 @@ class Operation(Task):
             if next_task:
                 return next_task.send(result=result)
             else:
-                return self.set_status(task.status)
+                return self.set_status(task.status, result)
         elif len(self.tasks) > 0:
             return self.tasks[0].send(result=result)
         else:
