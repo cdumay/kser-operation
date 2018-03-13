@@ -7,7 +7,8 @@
 
 """
 import logging
-from cdumay_rest_client.exceptions import ValidationError
+
+from cdumay_error import ValidationError
 from cdumay_result import Result, ResultSchema
 from kser.schemas import Message
 from kser_operation.task import Task

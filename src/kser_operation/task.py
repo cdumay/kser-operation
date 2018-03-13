@@ -22,9 +22,10 @@ class Task(Entrypoint):
 
     def __init__(self, uuid=None, params=None, status="PENDING", result=None,
                  **kwargs):
-        Entrypoint.__init__(self, uuid=uuid, params=params, result=result)
         self.status = status
         self.metadata = kwargs
+
+        Entrypoint.__init__(self, uuid=uuid, params=params, result=result)
 
     def get_attr(self, item):
         attr = "{}Id".format(item)
