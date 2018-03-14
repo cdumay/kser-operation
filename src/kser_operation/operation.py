@@ -143,7 +143,7 @@ class Operation(Task):
                     self.uuid, entrypoint=self.__class__.path,
                     params=self.params
                 ).dump(),
-                kresult=ResultSchema().dump(result).data if result else dict()
+                kresult=ResultSchema().dump(result) if result else dict()
             )
         )
         return self.onsuccess(result)
@@ -165,7 +165,7 @@ class Operation(Task):
                     self.uuid, entrypoint=self.__class__.path,
                     params=self.params
                 ).dump(),
-                kresult=ResultSchema().dump(result).data if result else dict()
+                kresult=ResultSchema().dump(result) if result else dict()
             )
         )
         return self.onerror(result)
