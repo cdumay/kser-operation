@@ -1,2 +1,2 @@
-kser
-cdumay-result
+kser>=0.6
+cdumay-result>=0.1.3
